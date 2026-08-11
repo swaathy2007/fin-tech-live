@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User as UserIcon, Mail, Lock, ArrowRight } from "lucide-react";
+import { User as UserIcon, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,9 +51,18 @@ const Signup: React.FC = () => {
       return;
     }
 
-    await signup(email, name, password);
-    showSuccess("Account created successfully!");
-    navigate("/");
+    setIsLoading(true);
+    try {
+      await signup(email, name, password);
+      showSuccess(`Welcome ${name}! Your account has been created.`);
+      navigate("/");
+    } catch (err: any) {
+      const msg = err?.message || "Failed to create account. Please try again.";
+      setError(msg);
+      showError(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -76,7 +86,7 @@ const Signup: React.FC = () => {
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="John Doe"
+              placeholder="Swaathy .M"
               className="pl-10 rounded-xl"
               required
             />
@@ -133,10 +143,20 @@ const Signup: React.FC = () => {
 
         <Button
           type="submit"
+          disabled={isLoading}
           className="w-full rounded-xl font-bold py-6 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25 text-white gap-2 mt-2"
         >
-          Get Started Free
-          <ArrowRight className="w-4 h-4" />
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Creating Account...
+            </>
+          ) : (
+            <>
+              Get Started Free
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </Button>
 
         <div className="text-center pt-2">

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, ArrowRight } from "lucide-react";
+import { Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { AuthLayout } from "@/components/AuthLayout";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,7 @@ const Login: React.FC = () => {
   const [password, setPassword] = useState("password123");
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,9 +37,18 @@ const Login: React.FC = () => {
       return;
     }
 
-    await login(email, password);
-    showSuccess("Welcome back to FinSight AI!");
-    navigate("/");
+    setIsLoading(true);
+    try {
+      await login(email, password);
+      showSuccess("Welcome back to FinSight AI!");
+      navigate("/");
+    } catch (err: any) {
+      const msg = err?.message || "Invalid email or password. Please try again.";
+      setError(msg);
+      showError(msg);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -106,10 +116,20 @@ const Login: React.FC = () => {
 
         <Button
           type="submit"
+          disabled={isLoading}
           className="w-full rounded-xl font-bold py-6 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-500/25 text-white gap-2"
         >
-          Sign In
-          <ArrowRight className="w-4 h-4" />
+          {isLoading ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Signing In...
+            </>
+          ) : (
+            <>
+              Sign In
+              <ArrowRight className="w-4 h-4" />
+            </>
+          )}
         </Button>
 
         <div className="text-center pt-2">
