@@ -15,21 +15,31 @@ function getAuthHeaders(): HeadersInit {
 }
 
 async function request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-  const url = `${API_BASE_URL}${endpoint}`;
-  const response = await fetch(url, {
-    ...options,
-    headers: {
-      ...getAuthHeaders(),
-      ...(options.headers || {}),
-    },
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 2000); // 2-second fast timeout
 
-  if (!response.ok) {
-    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
-    throw new Error(errorData.detail || "API request failed");
+  try {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const response = await fetch(url, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        ...getAuthHeaders(),
+        ...(options.headers || {}),
+      },
+    });
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+      throw new Error(errorData.detail || "API request failed");
+    }
+
+    return response.json();
+  } catch (err) {
+    clearTimeout(timeoutId);
+    throw err;
   }
-
-  return response.json();
 }
 
 // Authentication API

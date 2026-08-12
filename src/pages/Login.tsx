@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { showError, showSuccess } from "@/utils/toast";
+import { ForgotPasswordModal } from "@/components/ForgotPasswordModal";
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
@@ -18,6 +19,7 @@ const Login: React.FC = () => {
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [isForgotModalOpen, setIsForgotModalOpen] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,40 +54,50 @@ const Login: React.FC = () => {
   };
 
   return (
-    <AuthLayout
-      title="Welcome Back"
-      subtitle="Log in to access your investment intelligence dashboard"
-    >
-      <form onSubmit={handleSubmit} className="space-y-5">
-        {error && (
-          <div className="p-3 text-xs font-semibold text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl">
-            {error}
-          </div>
-        )}
+    <>
+      <ForgotPasswordModal
+        isOpen={isForgotModalOpen}
+        onClose={() => setIsForgotModalOpen(false)}
+        defaultEmail={email}
+      />
+      <AuthLayout
+        title="Welcome Back"
+        subtitle="Log in to access your investment intelligence dashboard"
+      >
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {error && (
+            <div className="p-3 text-xs font-semibold text-rose-500 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+              {error}
+            </div>
+          )}
 
-        <div className="space-y-2">
-          <Label htmlFor="email">Email Address</Label>
-          <div className="relative">
-            <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              className="pl-10 rounded-xl"
-              required
-            />
+          <div className="space-y-2">
+            <Label htmlFor="email">Email Address</Label>
+            <div className="relative">
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="pl-10 rounded-xl"
+                required
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <Label htmlFor="password">Password</Label>
-            <a href="#" className="text-xs text-blue-500 hover:underline">
-              Forgot password?
-            </a>
-          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <Label htmlFor="password">Password</Label>
+              <button
+                type="button"
+                onClick={() => setIsForgotModalOpen(true)}
+                className="text-xs text-blue-500 hover:underline bg-transparent border-none p-0 cursor-pointer"
+              >
+                Forgot password?
+              </button>
+            </div>
           <div className="relative">
             <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
@@ -142,6 +154,7 @@ const Login: React.FC = () => {
         </div>
       </form>
     </AuthLayout>
+  </>
   );
 };
 
