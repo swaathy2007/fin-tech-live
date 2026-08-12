@@ -2,6 +2,10 @@ import logging
 from typing import Dict, List, Any, Optional
 import yfinance as yf
 
+# Silence verbose third-party yfinance logging
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+
 logger = logging.getLogger("yfinance_service")
 
 # Fallback cache for popular tickers in case yfinance rate limits or network issues occur
@@ -217,8 +221,8 @@ POPULAR_FALLBACKS: Dict[str, Dict[str, Any]] = {
         "market_cap": "₹20T",
         "category": "stock",
     },
-    "TATAMOTORS.NS": {
-        "symbol": "TATAMOTORS.NS",
+    "TATAMOTORS.BO": {
+        "symbol": "TATAMOTORS.BO",
         "name": "Tata Motors Limited",
         "price": 980.50,
         "change": 26.80,

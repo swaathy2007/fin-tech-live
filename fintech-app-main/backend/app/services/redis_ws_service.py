@@ -84,7 +84,7 @@ async def price_poller_task():
     symbols = [
         "NEM", "GOLD", "SLV", "USO", "AAPL", "BTC-USD",
         "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META",
-        "AMD", "PLTR", "JPM", "RELIANCE.NS", "TATAMOTORS.NS",
+        "AMD", "PLTR", "JPM", "RELIANCE.NS", "TATAMOTORS.BO",
         "TCS.NS", "INFY.NS", "ETH-USD", "SOL-USD"
     ]
     logger.info(f"Starting background price poller for symbols: {symbols}")
