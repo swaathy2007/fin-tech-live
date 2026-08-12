@@ -2,6 +2,10 @@ import logging
 from typing import Dict, List, Any, Optional
 import yfinance as yf
 
+# Silence verbose third-party yfinance logging
+logging.getLogger("yfinance").setLevel(logging.CRITICAL)
+logging.getLogger("urllib3").setLevel(logging.CRITICAL)
+
 logger = logging.getLogger("yfinance_service")
 
 # Fallback cache for popular tickers in case yfinance rate limits or network issues occur
