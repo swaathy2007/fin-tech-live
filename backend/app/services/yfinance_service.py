@@ -350,8 +350,7 @@ def get_stock_quote(symbol: str) -> Dict[str, Any]:
             "market_cap": format_market_cap(market_cap_val),
             "category": category,
         }
-    except Exception as e:
-        logger.warning(f"Error fetching yfinance quote for {cleaned_symbol}: {e}")
+    except Exception:
         if cleaned_symbol in POPULAR_FALLBACKS:
             return POPULAR_FALLBACKS[cleaned_symbol]
         
