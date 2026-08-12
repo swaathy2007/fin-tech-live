@@ -217,8 +217,8 @@ POPULAR_FALLBACKS: Dict[str, Dict[str, Any]] = {
         "market_cap": "₹20T",
         "category": "stock",
     },
-    "TATAMOTORS.BO": {
-        "symbol": "TATAMOTORS.BO",
+    "TATAMOTORS.NS": {
+        "symbol": "TATAMOTORS.NS",
         "name": "Tata Motors Limited",
         "price": 980.50,
         "change": 26.80,
