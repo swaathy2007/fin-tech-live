@@ -1,69 +1,117 @@
-import React, { useState } from "react";
-import { Sparkles, Send, Bot, User as UserIcon, X, Zap, RefreshCw } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sparkles, Send, Bot, User as UserIcon, X, Zap, RefreshCw, Trash2 } from "lucide-react";
 import { ChatMessage } from "@/types";
 import { MOCK_ASSETS } from "@/data/mockAssets";
 import { usePortfolio } from "@/context/PortfolioContext";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { chatApi } from "@/lib/api";
+import { showSuccess } from "@/utils/toast";
 
 const INITIAL_MESSAGES: ChatMessage[] = [
   {
     id: "msg_1",
     sender: "ai",
-    text: "Hello! I am your FinSight AI Intelligence Assistant. Ask me anything about stock valuations, portfolio risk, market sentiment, or technical indicators!",
+    text: "Hello! I am your FinSight AI Intelligence Copilot. Ask me about stock valuations (FNV, NEM, Gold, Apple, Reliance), app features, or portfolio risk audits!",
     timestamp: "Just now",
     suggestedQuestions: [
-      "Analyze my current portfolio risk",
-      "Which asset has the highest growth potential?",
-      "Explain what P/E Ratio and Market Cap mean",
-      "Should I buy Bitcoin or Apple right now?"
+      "What is this app and its features?",
+      "What is FNV stock?",
+      "What is Gold stock?",
+      "Audit my portfolio risk"
     ]
   }
 ];
 
 export const AiChatDrawer: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>(INITIAL_MESSAGES);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    const saved = localStorage.getItem("chat_history_drawer");
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return INITIAL_MESSAGES;
+      }
+    }
+    return INITIAL_MESSAGES;
+  });
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
 
   const { stats, holdingsWithMetrics } = usePortfolio();
 
-  const generateAiAnswer = (prompt: string): string => {
-    const p = prompt.toLowerCase();
+  // Save chat history to localStorage
+  useEffect(() => {
+    localStorage.setItem("chat_history_drawer", JSON.stringify(messages));
+  }, [messages]);
 
-    if (p.includes("portfolio") || p.includes("risk") || p.includes("audit")) {
+  const generateLocalAiAnswer = (prompt: string): string => {
+    const p = prompt.toLowerCase().trim();
+
+    // 1. App Features & Overview
+    if (p.includes("app") || p.includes("feature") || p.includes("help") || p.includes("what can i do") || p.includes("about")) {
+      return (
+        "Welcome to FinSight AI Financial Intelligence! 🚀\n\n" +
+        "Here are the core features you can explore:\n" +
+        "1. 📈 Live Markets & Charts: Real-time price quotes for Gold (FNV, NEM, Barrick, SLV), US Tech, Indian Equities (Reliance, Tata), & Crypto.\n" +
+        "2. 💼 Virtual Portfolio: ₹10,00,000 virtual balance to buy and sell stocks risk-free.\n" +
+        "3. 🤖 AI Copilot: Ask AI about stock valuations, portfolio risk audits, & financial terms.\n" +
+        "4. 🔔 Real-Time Price Alerts: Instant notifications when stock target prices are hit.\n" +
+        "5. 🎓 Academy & Calendar: Market replay simulator, economic inflation calendar, & backtesting tools."
+      );
+    }
+
+    // 2. Asset Lookup in MOCK_ASSETS (e.g. FNV, GOLD, NEM, Reliance, Apple, Bitcoin)
+    const matchedAsset = MOCK_ASSETS.find((a) =>
+      p.includes(a.symbol.toLowerCase()) ||
+      p.includes(a.name.toLowerCase()) ||
+      p.includes(a.id.toLowerCase())
+    );
+
+    if (matchedAsset) {
+      return (
+        `${matchedAsset.name} (${matchedAsset.symbol}) is trading at ₹${matchedAsset.price.toLocaleString()} ` +
+        `(${matchedAsset.change >= 0 ? "+" : ""}${matchedAsset.change}% today).\n\n` +
+        `• Category: ${matchedAsset.category.toUpperCase()}\n` +
+        `• Market Cap: ${matchedAsset.marketCap}\n` +
+        `• 52-Week Range: ₹${matchedAsset.lowWeek52.toLocaleString()} - ₹${matchedAsset.highWeek52.toLocaleString()}\n\n` +
+        `Description: ${matchedAsset.description}`
+      );
+    }
+
+    // 3. Portfolio Audit
+    if (p.includes("portfolio") || p.includes("risk") || p.includes("audit") || p.includes("rebalance")) {
       const holdingsCount = holdingsWithMetrics.length;
       if (holdingsCount === 0) {
-        return "Your portfolio is currently 100% in virtual cash. Consider diversifying into high-cap stocks like Apple or defensive assets like Gold to start compounding value!";
+        return "Your portfolio is currently 100% in virtual cash (₹10,00,000). Consider diversifying into high-cap stocks like Apple or defensive assets like Gold (FNV, NEM) to start compounding value!";
       }
       const isProfitable = stats.totalProfitLoss >= 0;
-      return `Portfolio Risk Analysis: You currently hold ${holdingsCount} assets with a net ${
-        isProfitable ? "gain of +" : "loss of "
-      }₹${Math.abs(stats.totalProfitLoss).toLocaleString()}. Your asset allocation is balanced across ${
-        stats.bestHolding ? stats.bestHolding.symbol : "market leaders"
-      }. Tip: Ensure you maintain at least 15-20% in defensive assets like Gold or cash reserves.`;
-    }
-
-    if (p.includes("apple") || p.includes("aapl")) {
-      const apple = MOCK_ASSETS.find((a) => a.id === "apple");
-      return `Apple Inc. (AAPL) is trading at ₹${apple?.price}. AI Sentiment: 92% Bullish. Key Drivers: Silicon M4 Max chip releases, robust ecosystem services, and strong cash position ($60B+ buybacks).`;
-    }
-
-    if (p.includes("bitcoin") || p.includes("btc") || p.includes("crypto")) {
-      return `Bitcoin (BTC) is trading at ₹95,00,000 (+185 Trillion Market Cap). Institutional ETF inflows remain strong at $1.2B/day. Volatility is elevated; recommended maximum portfolio allocation is 5-15%.`;
+      return (
+        `Portfolio Risk Analysis:\n` +
+        `• Total Value: ₹${stats.totalPortfolioValue.toLocaleString()}\n` +
+        `• Cash Balance: ₹${stats.availableBalance.toLocaleString()}\n` +
+        `• Active Holdings: ${holdingsCount}\n` +
+        `• Overall Net P&L: ${isProfitable ? "+" : ""}₹${stats.totalProfitLoss.toLocaleString()} (${stats.totalReturnPercent.toFixed(1)}%)\n\n` +
+        `Recommendation: Diversify capital across equities, digital assets, and commodities to optimize risk-adjusted returns.`
+      );
     }
 
     if (p.includes("p/e") || p.includes("market cap") || p.includes("explain")) {
-      return `Financial Concepts:\n• Market Cap: Total market dollar value of a company's outstanding shares.\n• P/E Ratio: Price-to-Earnings ratio measures if a stock is overvalued or undervalued relative to its profits.\n• Diversification: Spreading capital so single asset crashes don't wipe out total portfolio value.`;
+      return (
+        `Financial Concepts:\n` +
+        `• Market Cap: Total dollar market value of a company's outstanding shares.\n` +
+        `• P/E Ratio: Price-to-Earnings ratio measures if a stock is overvalued or undervalued relative to its profits.\n` +
+        `• Diversification: Spreading capital across non-correlated assets to minimize downside risk.`
+      );
     }
 
-    if (p.includes("growth") || p.includes("buy")) {
-      return `Based on live sentiment data:\n1. Tesla (TSLA): High momentum (+4.3% today) driven by Robotaxi testing.\n2. Ethereum (ETH): DeFi TVL rising +25%.\n3. Gold: Strong central bank accumulation as macro inflation hedge.`;
-    }
-
-    return `FinSight AI Analysis: Markets are currently displaying bullish momentum (+2.4% average across tech and crypto). Always combine technical charts with risk management when placing trades!`;
+    return (
+      `FinSight AI Analysis for '${prompt}':\n` +
+      `Global financial markets prioritize sustained cash flows, earnings stability, and risk management. ` +
+      `Always evaluate corporate valuation metrics, 52-week price ranges, and technical momentum before trading.`
+    );
   };
 
   const handleSend = (textToSend?: string) => {
@@ -81,21 +129,46 @@ export const AiChatDrawer: React.FC = () => {
     if (!textToSend) setInput("");
     setIsTyping(true);
 
-    setTimeout(() => {
-      const aiReplyText = generateAiAnswer(messageText);
-      const aiMsg: ChatMessage = {
-        id: "ai_" + Date.now(),
-        sender: "ai",
-        text: aiReplyText,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        suggestedQuestions: [
-          "How do I rebalance my portfolio?",
-          "Show me today's top market catalyst"
-        ]
-      };
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 700);
+    // Call FastAPI backend connected to Claude API
+    chatApi.sendMessage(messageText, "chat")
+      .then((data) => {
+        const aiMsg: ChatMessage = {
+          id: data.id || ("ai_" + Date.now()),
+          sender: "ai",
+          text: data.content,
+          timestamp: data.timestamp || new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          suggestedQuestions: [
+            "What is FNV stock?",
+            "What are the features of this app?"
+          ]
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+        setIsTyping(false);
+      })
+      .catch(() => {
+        // Intelligent local responder fallback
+        setTimeout(() => {
+          const aiReplyText = generateLocalAiAnswer(messageText);
+          const aiMsg: ChatMessage = {
+            id: "ai_" + Date.now(),
+            sender: "ai",
+            text: aiReplyText,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            suggestedQuestions: [
+              "What is FNV stock?",
+              "What are the features of this app?"
+            ]
+          };
+          setMessages((prev) => [...prev, aiMsg]);
+          setIsTyping(false);
+        }, 600);
+      });
+  };
+
+  const handleClearHistory = () => {
+    setMessages(INITIAL_MESSAGES);
+    localStorage.removeItem("chat_history_drawer");
+    showSuccess("Chat history cleared.");
   };
 
   return (
@@ -113,16 +186,27 @@ export const AiChatDrawer: React.FC = () => {
 
       <SheetContent side="right" className="w-full sm:w-[420px] p-0 flex flex-col justify-between bg-card border-border rounded-l-3xl shadow-2xl">
         {/* Header */}
-        <SheetHeader className="p-4 border-b border-border bg-slate-950/80 text-white rounded-tl-3xl">
-          <SheetTitle className="text-base font-extrabold flex items-center gap-2 text-white">
-            <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 flex items-center justify-center">
-              <Sparkles className="w-4 h-4 text-white" />
-            </div>
-            FinSight AI Intelligence Copilot
-          </SheetTitle>
-          <p className="text-xs text-slate-400 font-normal">
-            Realtime market intelligence & portfolio diagnostic engine
-          </p>
+        <SheetHeader className="p-4 border-b border-border bg-slate-950/80 text-white rounded-tl-3xl flex flex-row items-center justify-between">
+          <div>
+            <SheetTitle className="text-base font-extrabold flex items-center gap-2 text-white">
+              <div className="w-7 h-7 rounded-xl bg-gradient-to-tr from-blue-600 to-cyan-400 p-0.5 flex items-center justify-center">
+                <Sparkles className="w-4 h-4 text-white" />
+              </div>
+              FinSight AI Intelligence Copilot
+            </SheetTitle>
+            <p className="text-xs text-slate-400 font-normal mt-0.5">
+              Realtime market intelligence & portfolio diagnostic engine
+            </p>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClearHistory}
+            className="text-slate-400 hover:text-rose-400 h-8 w-8 rounded-lg"
+            title="Clear Chat History"
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </SheetHeader>
 
         {/* Chat Messages */}
@@ -177,7 +261,7 @@ export const AiChatDrawer: React.FC = () => {
           {isTyping && (
             <div className="flex items-center gap-2 text-xs text-cyan-400 font-semibold bg-slate-900 p-3 rounded-2xl w-fit border border-slate-800">
               <RefreshCw className="w-3.5 h-3.5 animate-spin text-cyan-400" />
-              FinSight AI is analyzing live market telemetry...
+              FinSight AI is analyzing market telemetry...
             </div>
           )}
         </div>
@@ -194,7 +278,7 @@ export const AiChatDrawer: React.FC = () => {
             <Input
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask AI about stocks, risk, or crypto..."
+              placeholder="Ask AI about FNV, Gold, app features, or risk..."
               className="rounded-xl text-xs py-5 bg-background border-border"
             />
             <Button
