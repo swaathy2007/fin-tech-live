@@ -2,19 +2,14 @@ from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel
 
-try:
-    from pydantic import EmailStr
-except Exception:
-    EmailStr = str
-
 # Auth Schemas
 class UserCreate(BaseModel):
-    email: EmailStr
+    email: str
     password: str
     name: str
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str
     password: str
 
 class UserOut(BaseModel):
