@@ -16,7 +16,7 @@ export const AlertsDropdown: React.FC = () => {
   const { alerts, deleteAlert } = useAlerts();
   const { formatPrice } = useCurrency();
 
-  const activeAlerts = alerts.filter((a) => a.isActive);
+  const activeAlerts = alerts.filter((a) => a.status === "active");
 
   return (
     <DropdownMenu>

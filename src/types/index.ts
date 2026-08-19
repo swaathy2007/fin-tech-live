@@ -4,6 +4,7 @@ export type ThemeMode = 'light' | 'dark';
 export type TimePeriod = '1D' | '1W' | '1M' | '3M' | '1Y' | 'ALL';
 export type ChatMode = 'learning' | 'chat' | 'analysis';
 export type ImpactLevel = 'low' | 'medium' | 'high';
+export type SentimentType = 'bullish' | 'bearish' | 'neutral';
 
 export interface Asset {
   id: string;
@@ -73,18 +74,30 @@ export interface Message {
   suggestedQuestions?: string[];
 }
 
+export interface ChatMessage {
+  id: string;
+  sender: 'user' | 'ai';
+  text: string;
+  timestamp: string;
+  suggestedQuestions?: string[];
+}
+
 export interface NewsArticle {
   id: string;
-  headline: string;
+  headline?: string;
+  title?: string;
   summary: string;
   source: string;
-  url: string;
+  url?: string;
   thumbnail?: string;
-  category: 'Markets' | 'Tech' | 'Crypto' | 'Finance' | 'Commodities';
-  timestamp: string;
+  category: Category;
+  timestamp?: string;
+  timeAgo?: string;
+  assetId?: string;
   fullText?: string;
-  sentiment?: 'bullish' | 'bearish' | 'neutral';
-  sentimentScore?: number;
+  sentiment: SentimentType;
+  sentimentScore: number;
+  aiTakeaway?: string;
 }
 
 export interface PriceAlert {
@@ -98,6 +111,24 @@ export interface PriceAlert {
   status: 'active' | 'triggered' | 'inactive';
   createdDate: string;
   notificationType: 'push' | 'email' | 'both';
+}
+
+export interface LearningModule {
+  id: string;
+  title: string;
+  category: string;
+  readTime: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  description: string;
+  xpReward: number;
+  content: string[];
+  quiz: {
+    id: string;
+    question: string;
+    options: string[];
+    correctIndex: number;
+    explanation: string;
+  }[];
 }
 
 export interface NotificationItem {

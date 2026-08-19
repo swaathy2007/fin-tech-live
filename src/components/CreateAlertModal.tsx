@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/select";
 
 export const CreateAlertModal: React.FC = () => {
-  const { addAlert } = useAlerts();
+  const { createAlert } = useAlerts();
   const { formatPrice } = useCurrency();
 
   const [open, setOpen] = useState(false);
@@ -41,7 +41,7 @@ export const CreateAlertModal: React.FC = () => {
     e.preventDefault();
     const price = parseFloat(targetPrice);
     if (price > 0) {
-      addAlert(selectedAssetId, price, condition);
+      createAlert(selectedAssetId, price, condition);
       setOpen(false);
     }
   };

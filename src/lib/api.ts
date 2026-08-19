@@ -44,13 +44,13 @@ async function request<T>(endpoint: string, options: RequestInit = {}): Promise<
 
 // Authentication API
 export const authApi = {
-  signup: (email: string, name: string, password: str = "password123") =>
+  signup: (email: string, name: string, password: string = "password123") =>
     request<{ access_token: string; user: any }>("/auth/signup", {
       method: "POST",
       body: JSON.stringify({ email, name, password }),
     }),
 
-  login: (email: string, password: str = "password123") =>
+  login: (email: string, password: string = "password123") =>
     request<{ access_token: string; user: any }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),

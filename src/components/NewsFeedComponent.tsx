@@ -74,7 +74,7 @@ export const NewsFeedComponent: React.FC<NewsFeedComponentProps> = ({ assetId })
               </div>
 
               <h3 className="font-extrabold text-base text-foreground leading-snug">
-                {news.title}
+                {news.title ?? news.headline}
               </h3>
 
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -87,7 +87,7 @@ export const NewsFeedComponent: React.FC<NewsFeedComponentProps> = ({ assetId })
               <div className="text-[11px] font-extrabold text-blue-400 flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> AI Market Takeaway
               </div>
-              <p className="text-xs text-slate-200">{news.aiTakeaway}</p>
+              <p className="text-xs text-slate-200">{news.aiTakeaway ?? news.summary}</p>
             </div>
           </div>
         ))}
