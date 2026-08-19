@@ -14,12 +14,7 @@ import { getPriceHistory } from "@/data/mockPriceHistory";
 import { useCurrency } from "@/context/CurrencyContext";
 import { Button } from "@/components/ui/button";
 import { Sparkles, HelpCircle } from "lucide-react";
-import {
-  Tooltip as UiTooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { AiChartModal } from "@/components/AiChartModal";
 
 interface ChartComponentProps {
   assetId: string;
@@ -36,6 +31,7 @@ export const ChartComponent: React.FC<ChartComponentProps> = ({
 }) => {
   const { formatPrice } = useCurrency();
   const [period, setPeriod] = useState<TimePeriod>("1M");
+  const [isAiModalOpen, setIsAiModalOpen] = useState(false);
 
   const data: PricePoint[] = getPriceHistory(assetId, period);
 
@@ -49,59 +45,62 @@ export const ChartComponent: React.FC<ChartComponentProps> = ({
   // Stats calculation over period
   const openPrice = data.length > 0 ? data[0].open : 0;
   const closePrice = data.length > 0 ? data[data.length - 1].close : 0;
-  const periodHigh = Math.max(...data.map((d) => d.high));
-  const periodLow = Math.min(...data.map((d) => d.low));
+  const periodHigh = data.length > 0 ? Math.max(...data.map((d) => d.high)) : 0;
+  const periodLow = data.length > 0 ? Math.min(...data.map((d) => d.low)) : 0;
   const periodAvg =
     data.length > 0
       ? data.reduce((sum, d) => sum + d.price, 0) / data.length
       : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Header Controls & Timeframe Selector */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card/80 p-3 rounded-2xl border border-border">
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
-            Timeframe:
-          </span>
-          <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
-            {TIME_PERIODS.map((t) => (
-              <button
-                key={t}
-                onClick={() => setPeriod(t)}
-                className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                  period === t
-                    ? "bg-blue-600 text-white shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {t}
-              </button>
-            ))}
+    <>
+      <AiChartModal
+        isOpen={isAiModalOpen}
+        onClose={() => setIsAiModalOpen(false)}
+        assetSymbol={assetSymbol}
+        period={period}
+        openPrice={openPrice}
+        closePrice={closePrice}
+        periodHigh={periodHigh}
+        periodLow={periodLow}
+        periodAvg={periodAvg}
+      />
+      <div className="space-y-6">
+        {/* Header Controls & Timeframe Selector */}
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-card/80 p-3 rounded-2xl border border-border">
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-bold text-muted-foreground uppercase tracking-wider">
+              Timeframe:
+            </span>
+            <div className="flex items-center gap-1 bg-muted p-1 rounded-xl">
+              {TIME_PERIODS.map((t) => (
+                <button
+                  key={t}
+                  onClick={() => setPeriod(t)}
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
+                    period === t
+                      ? "bg-blue-600 text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* AI Explain Chart Badge Button */}
-        <TooltipProvider>
-          <UiTooltip>
-            <TooltipTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="rounded-xl border-blue-500/30 text-blue-400 hover:bg-blue-500/10 gap-1.5 text-xs font-semibold"
-              >
-                <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-                AI Explain Chart
-                <HelpCircle className="w-3 h-3 text-muted-foreground" />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent className="max-w-xs text-xs rounded-xl p-3 bg-slate-900 border-slate-800 text-slate-200">
-              <p className="font-bold text-cyan-400 mb-1">AI Intelligence Feature</p>
-              Click to see why price moved during this period. (Coming in Phase 3 - AI will explain technical indicators and catalyst news).
-            </TooltipContent>
-          </UiTooltip>
-        </TooltipProvider>
-      </div>
+          {/* AI Explain Chart Button */}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsAiModalOpen(true)}
+            className="rounded-xl border-blue-500/30 text-blue-400 hover:bg-blue-500/10 gap-1.5 text-xs font-semibold cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
+            AI Explain Chart
+            <HelpCircle className="w-3 h-3 text-muted-foreground" />
+          </Button>
+        </div>
 
       {/* Primary Price Area Chart */}
       <div className="bg-card border border-border p-4 rounded-3xl space-y-2">
@@ -209,5 +208,6 @@ export const ChartComponent: React.FC<ChartComponentProps> = ({
         </div>
       </div>
     </div>
+  </>
   );
 };
